@@ -60,20 +60,24 @@ class Foo
   end
 end
 
-foo = Celluloid::ViewProxy.new(Foo.new)
+class Controller
+  def render(timeout)
+    foo = Celluloid::ViewProxy.new(Foo.new)
 
-slow = foo.timeout(3) do
-  foo.slow
-end
-fast = foo.fast
+    slow = foo.timeout(timeout) do
+      foo.slow
+    end
+    fast = foo.fast
 
-template = ERB.new(File.read(File.expand_path("../demo.erb", __FILE__)), nil, "-")
-template.filename = "templates:demo.erb"
-Celluloid.logger.info "starting to render"
+    template = ERB.new(File.read(File.expand_path("../demo.erb", __FILE__)), nil, "-")
+    template.filename = "templates:demo.erb"
+    Celluloid.logger.info "starting to render"
 
-begin
-  puts template.result(binding)
-rescue
-  Celluloid.logger.error "got an error: #{$!.inspect}"
-  raise
+    begin
+      puts template.result(binding)
+    rescue
+      Celluloid.logger.error "got an error: #{$!.inspect}"
+      raise
+    end
+  end
 end
